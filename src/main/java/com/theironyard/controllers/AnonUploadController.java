@@ -1,5 +1,6 @@
 package com.theironyard.controllers;
 
+import com.theironyard.entities.AnonFile;
 import com.theironyard.services.AnonFileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +27,9 @@ public class AnonUploadController {
         File f = File.createTempFile("file", file.getOriginalFilename(), dir);
         FileOutputStream fos = new FileOutputStream(f);
         fos.write(file.getBytes());
+
+        AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename());
+        files.save(anonFile);
+        response.sendRedirect("/");
     }
 }
