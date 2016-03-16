@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by ericweidman on 3/16/16.
@@ -31,5 +32,10 @@ public class AnonUploadController {
         AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename());
         files.save(anonFile);
         response.sendRedirect("/");
+    }
+    @RequestMapping(path = "/files", method = RequestMethod.GET)
+    public List<AnonFile> getFiles(){
+        return (List<AnonFile>) files.findAll();
+
     }
 }
