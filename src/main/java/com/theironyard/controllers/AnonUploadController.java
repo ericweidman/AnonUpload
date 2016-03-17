@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by ericweidman on 3/16/16.
@@ -22,19 +24,30 @@ public class AnonUploadController {
     AnonFileRepository files;
 
     @RequestMapping(path = "/upload", method = RequestMethod.POST)
-    public void upload(MultipartFile file, HttpServletResponse response) throws IOException {
-        File dir = new File("public/files");
-        dir.mkdirs();
-        File f = File.createTempFile("file", file.getOriginalFilename(), dir);
-        FileOutputStream fos = new FileOutputStream(f);
-        fos.write(file.getBytes());
+    public void upload(MultipartFile file, HttpServletResponse response) throws Exception {
 
-        AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename());
-        files.save(anonFile);
-        response.sendRedirect("/");
+        if (files.count() > 10) {
+            files.delete(1);
+            File fd = new File("public/files" + file.getName());
+            fd.delete();
+            long saveNext = files.count();
+
+
+            File dir = new File("public/files");
+            dir.mkdirs();
+            File f = File.createTempFile("file" + saveNext, file.getOriginalFilename(), dir);
+            FileOutputStream fos = new FileOutputStream(f);
+            fos.write(file.getBytes());
+            AnonFile anonFile = new AnonFile(f.getName(), file.getOriginalFilename());
+            files.save(anonFile);
+            response.sendRedirect("/");
+        }
     }
+
+
+
     @RequestMapping(path = "/files", method = RequestMethod.GET)
-    public List<AnonFile> getFiles(){
+    public List<AnonFile> getFiles() {
         return (List<AnonFile>) files.findAll();
 
     }
